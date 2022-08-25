@@ -26,6 +26,7 @@ public class Arguments {
 	private static Arguments instance;
 	private Mode mode = Mode.GEN_TESTS;
 	private String spec = "";
+	private String microArch = "";
 	private String plat = "";
 	private String jdkVersion = "";
 	private String impl = "";
@@ -68,7 +69,9 @@ public class Arguments {
 			+ "    --testTime=<number>       Specify expected length of test running time (minutes) on each machines for mode parallelList, this option will be suppressed if numOfMachines is given\n"
 			+ "                              If testTime and numOfMachines are not provided, default numOfMachines will be used\n"
 			+ "    --TRSSURL=<serverURL>     Specify the TRSS server URL for mode parallelList\n"
-			+ "                              Defaults to " + Constants.TRSS_URL + "\n";
+			+ "                              Defaults to " + Constants.TRSS_URL + "\n"
+			+ "    --microArch=<microArch>   Specify micro-architecture\n"
+			+ "                              Defaults to  \"\"\n";
 			
 
 	private Arguments() {
@@ -87,6 +90,10 @@ public class Arguments {
 
 	public String getSpec() {
 		return spec;
+	}
+
+	public String getMicroArch() {
+		return microArch;
 	}
 
 	public String getPlat() {
@@ -151,7 +158,13 @@ public class Arguments {
 			Properties platProp = new Properties();
 			platProp.load(platReader);
 			plat = platProp.getProperty(spec);
+			if (plat == null) {
+				System.err.println("Error: Please update file " + Constants.BUILDPLAT_JSON + "! Add entry for " + spec + ".");
+				System.exit(1);
+			}
 		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
 		}
 		return plat;
 	}
@@ -178,6 +191,8 @@ public class Arguments {
 			} else if (arglc.startsWith("--spec=")) {
 				spec = arglc.substring(arg.indexOf("=") + 1);
 				plat = spec2Plat(spec);
+			} else if (arglc.startsWith("--microarch=")) {
+				microArch = arglc.substring(arg.indexOf("=") + 1);
 			} else if (arglc.startsWith("--jdkversion=")) {
 				jdkVersion = arglc.substring(arg.indexOf("=") + 1);
 			} else if (arglc.startsWith("--impl=")) {
